@@ -1,0 +1,45 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual Environment
+venv/
+.env/
+
+# Environment Variables
+.env
+.env.local
+.env.*
+
+# Python Build Files
+build/
+dist/
+*.egg-info/
+
+# Testing
+.pytest_cache/
+
+# VS Code
+.vscode/
+
+# macOS
+.DS_Store
+
+# Logs
+*.log
+
+# Next.js (for later)
+frontend/.next/
+frontend/node_modules/
+frontend/out/
+
+# Coverage
+.coverage
+htmlcov/
+
+# IDE
+.idea/
+
+# Misc
+*.swp
