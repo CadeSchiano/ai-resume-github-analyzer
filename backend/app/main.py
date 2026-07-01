@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 
 from app.routes.github import router as github_router
+from app.routes.analysis import router as analysis_router
 
 app = FastAPI(
     title="AI Resume GitHub Analyzer",
@@ -8,17 +9,12 @@ app = FastAPI(
 )
 
 app.include_router(github_router)
-
+app.include_router(analysis_router)
 
 @app.get("/")
 def root():
-    return {
-        "message": "AI Resume GitHub Analyzer API"
-    }
-
+    return {"message": "AI Resume GitHub Analyzer API"}
 
 @app.get("/health")
 def health():
-    return {
-        "status": "online"
-    }
+    return {"status": "online"}
