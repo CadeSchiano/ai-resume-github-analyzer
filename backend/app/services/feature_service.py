@@ -4,6 +4,8 @@ from datetime import date, datetime, timedelta
 import re
 from typing import Any
 
+from app.services.resume_parser_service import SKILL_PATTERNS
+
 
 RECENT_ACTIVITY_DAYS = 365
 
@@ -133,6 +135,13 @@ def extract_repository_features(
     has_authentication_evidence = bool(re.search(r"\b(authentication|authorization|oauth|login|jwt)\b", readme_text))
     has_external_integration_evidence = bool(re.search(r"\b(webhook|stripe|twilio|integration|third-party api)\b", readme_text))
     has_algorithm_evidence = bool(re.search(r"\b(algorithm|machine learning|neural network|data structure)\b", readme_text))
+    technologies = set(languages)
+    technologies.update(
+        skill for skill, pattern in SKILL_PATTERNS.items() if re.search(pattern, readme_text)
+    )
+    technologies.update(frameworks)
+    if has_docker:
+        technologies.add("Docker")
 
     if has_frontend and has_backend:
         project_types = ["full_stack"]
@@ -172,6 +181,7 @@ def extract_repository_features(
             "has_architecture": documentation["has_architecture_information"],
         },
         "frameworks_detected": frameworks,
+        "technologies_detected": sorted(technologies),
         "project_types_detected": project_types,
         "evidence_available": {
             "readme": readme_available,

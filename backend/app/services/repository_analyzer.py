@@ -160,6 +160,7 @@ def analyze_repository(
     return {
         "name": features["name"],
         "primary_language": features["primary_language"],
+        "is_fork": features["is_fork"],
         "scores": {
             "repository_quality": _quality_score(features, repository),
             "documentation": _documentation_score(features),
@@ -168,6 +169,7 @@ def analyze_repository(
             "project_presentation": _presentation_score(features),
         },
         "frameworks_detected": features["frameworks_detected"],
+        "technologies_detected": features["technologies_detected"],
         "project_types_detected": features["project_types_detected"],
         "strengths": strengths,
         "improvements": improvements,

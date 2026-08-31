@@ -6,8 +6,11 @@ from fastapi.testclient import TestClient
 
 from app.main import app
 from app.services import github_service
+from app.services.cross_analysis_service import compare_resume_skills
+from app.services.developer_report_service import generate_developer_report
 from app.services.feature_service import extract_repository_features
 from app.services.repository_analyzer import analyze_repository
+from app.services.role_readiness_service import calculate_role_readiness, supported_roles
 from app.services.scoring_service import calculate_github_scores
 
 
@@ -190,3 +193,111 @@ def test_analysis_api_returns_404_for_unknown_user():
 
     assert response.status_code == 404
     assert response.json()["detail"] == "GitHub user not found"
+
+
+def test_cross_analysis_reports_only_public_repository_evidence():
+    comparisons = compare_resume_skills(
+        ["Python", "React", "Docker", "FastAPI"],
+        [
+            {"name": "api-service", "is_fork": False, "technologies_detected": ["Python", "Docker"]},
+            {"name": "dashboard", "is_fork": False, "technologies_detected": ["Python", "React"]},
+            {"name": "forked-demo", "is_fork": True, "technologies_detected": ["FastAPI"]},
+        ],
+    )
+
+    assert comparisons == [
+        {
+            "skill": "Python",
+            "evidence_level": "strong_public_evidence",
+            "evidence_repositories": ["api-service", "dashboard"],
+        },
+        {
+            "skill": "React",
+            "evidence_level": "some_public_evidence",
+            "evidence_repositories": ["dashboard"],
+        },
+        {
+            "skill": "Docker",
+            "evidence_level": "some_public_evidence",
+            "evidence_repositories": ["api-service"],
+        },
+        {
+            "skill": "FastAPI",
+            "evidence_level": "no_public_github_evidence_found",
+            "evidence_repositories": [],
+        },
+    ]
+
+
+def test_developer_report_combines_existing_reports_and_cross_evidence():
+    github_report = {
+        "username": "sample",
+        "repositories": [{"name": "api-service", "is_fork": False, "technologies_detected": ["Python"]}],
+    }
+    resume_report = {"skills": ["Python", "FastAPI"]}
+    with patch("app.services.developer_report_service.generate_report", return_value=github_report), patch(
+        "app.services.developer_report_service.generate_resume_report", return_value=resume_report
+    ):
+        report = generate_developer_report("sample", "resume text")
+
+    assert report == {
+        "username": "sample",
+        "github_analysis": github_report,
+        "resume_analysis": resume_report,
+        "resume_github_evidence": [
+            {"skill": "Python", "evidence_level": "some_public_evidence", "evidence_repositories": ["api-service"]},
+            {"skill": "FastAPI", "evidence_level": "no_public_github_evidence_found", "evidence_repositories": []},
+        ],
+    }
+
+
+def test_combined_analysis_api_returns_developer_report():
+    expected_report = {"username": "sample", "github_analysis": {}, "resume_analysis": {}, "resume_github_evidence": []}
+    client = TestClient(app)
+    with patch("app.routes.analysis.extract_resume_text", return_value="Jane Developer"), patch(
+        "app.routes.analysis.generate_developer_report", return_value=expected_report
+    ):
+        response = client.post(
+            "/analysis/sample/resume",
+            files={"resume": ("resume.pdf", b"%PDF-1.7 test", "application/pdf")},
+        )
+
+    assert response.status_code == 200
+    assert response.json() == expected_report
+
+
+def test_role_readiness_uses_resume_claims_public_evidence_and_projects():
+    readiness = calculate_role_readiness(
+        "Backend Developer",
+        ["Python", "REST APIs", "PostgreSQL"],
+        [
+            {"skill": "Python", "evidence_level": "strong_public_evidence"},
+            {"skill": "REST APIs", "evidence_level": "some_public_evidence"},
+            {"skill": "PostgreSQL", "evidence_level": "no_public_github_evidence_found"},
+        ],
+        has_projects=True,
+    )
+
+    assert readiness == {
+        "target_role": "Backend Developer",
+        "role_readiness_score": 83,
+        "categories": {
+            "resume_skill_alignment": 45,
+            "public_github_evidence": 18,
+            "project_evidence": 20,
+        },
+        "requirements": [
+            {"requirement": "backend language", "matched_resume_skills": ["Python"], "public_evidence": "strong_public_evidence"},
+            {"requirement": "API technology", "matched_resume_skills": ["REST APIs"], "public_evidence": "some_public_evidence"},
+            {"requirement": "database technology", "matched_resume_skills": ["PostgreSQL"], "public_evidence": "no_public_github_evidence_found"},
+        ],
+    }
+    assert supported_roles() == [
+        "Software Engineer Intern",
+        "Software Engineer",
+        "Backend Developer",
+        "Frontend Developer",
+        "Full-Stack Developer",
+        "Mobile Developer",
+        "AI/ML",
+    ]
