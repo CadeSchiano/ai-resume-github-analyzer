@@ -5,6 +5,7 @@ from fastapi.testclient import TestClient
 
 from app.main import app
 from app.services.resume_parser_service import parse_resume_text
+from app.services.resume_report_service import generate_resume_report
 from app.services.resume_scoring_service import calculate_resume_scores
 from app.services.resume_service import extract_resume_text
 
@@ -141,3 +142,52 @@ def test_resume_scores_do_not_infer_evidence_that_is_absent():
         "resume_score": 0,
         "categories": {"technical_skills": 0, "experience": 0, "projects": 0, "structure": 0},
     }
+
+
+def test_resume_report_returns_scores_evidence_and_actionable_feedback():
+    report = generate_resume_report(
+        """Technical Skills
+Python, FastAPI, PostgreSQL
+
+Experience
+Engineering Intern
+- Built a REST API that reduced response time by 30%.
+
+Projects
+Taskboard
+- Developed a Python application used by 100 users.
+
+Education
+B.S. Computer Science
+"""
+    )
+
+    assert report["resume_score"] == 93
+    assert report["skills"] == ["Python", "FastAPI", "PostgreSQL", "REST APIs"]
+    assert report["experience"] == ["Engineering Intern\nBuilt a REST API that reduced response time by 30%."]
+    assert report["projects"] == ["Taskboard\nDeveloped a Python application used by 100 users."]
+    assert len(report["strengths"]) == 4
+    assert report["improvements"] == []
+
+
+def test_resume_analyze_api_returns_the_complete_report():
+    expected_report = {
+        "resume_score": 74,
+        "categories": {"technical_skills": 30},
+        "skills": ["Python"],
+        "experience": [],
+        "projects": [],
+        "strengths": [],
+        "improvements": [],
+    }
+    client = TestClient(app)
+    with patch("app.routes.resume.extract_resume_text", return_value="Jane Developer\nPython"), patch(
+        "app.routes.resume.generate_resume_report", return_value=expected_report
+    ):
+        response = client.post(
+            "/resume/analyze",
+            files={"resume": ("resume.pdf", b"%PDF-1.7 test", "application/pdf")},
+        )
+
+    assert response.status_code == 200
+    assert response.json() == expected_report
