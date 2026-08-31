@@ -1,7 +1,8 @@
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
 
-from app.config import MAX_RESUME_REQUEST_SIZE_BYTES
+from app.config import FRONTEND_ORIGINS, MAX_RESUME_REQUEST_SIZE_BYTES
 from app.routes.github import router as github_router
 from app.routes.analysis import router as analysis_router
 from app.routes.resume import router as resume_router
@@ -14,6 +15,14 @@ app = FastAPI(
 app.include_router(github_router)
 app.include_router(analysis_router)
 app.include_router(resume_router)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=FRONTEND_ORIGINS,
+    allow_credentials=False,
+    allow_methods=["GET", "POST"],
+    allow_headers=["Content-Type"],
+)
 
 
 @app.middleware("http")

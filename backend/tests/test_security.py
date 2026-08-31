@@ -46,5 +46,37 @@ def test_api_applies_security_and_sensitive_response_headers():
     assert upload_response.headers["cache-control"] == "no-store"
 
 
+def test_api_allows_only_the_configured_frontend_origin():
+    client = TestClient(app)
+    allowed_response = client.options(
+        "/analysis/octocat",
+        headers={
+            "Origin": "http://localhost:3000",
+            "Access-Control-Request-Method": "GET",
+        },
+    )
+    blocked_response = client.options(
+        "/analysis/octocat",
+        headers={
+            "Origin": "https://untrusted.example",
+            "Access-Control-Request-Method": "GET",
+        },
+    )
+
+    assert allowed_response.status_code == 200
+    assert allowed_response.headers["access-control-allow-origin"] == "http://localhost:3000"
+    assert blocked_response.status_code == 400
+    assert "access-control-allow-origin" not in blocked_response.headers
+
+    loopback_response = client.options(
+        "/analysis/octocat",
+        headers={
+            "Origin": "http://127.0.0.1:3000",
+            "Access-Control-Request-Method": "GET",
+        },
+    )
+    assert loopback_response.status_code == 200
+
+
 def test_rate_limit_retry_header_uses_the_configured_window():
     assert RATE_LIMIT_WINDOW_SECONDS == 60

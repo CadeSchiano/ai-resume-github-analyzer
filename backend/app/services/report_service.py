@@ -15,6 +15,7 @@ REPOSITORY_RANK_WEIGHTS = {
     "project_complexity": 20,
     "project_presentation": 10,
 }
+MAX_REPOSITORIES_TO_ANALYZE = 8
 
 
 def _meaningful_pairs(
@@ -111,7 +112,9 @@ def generate_report(username: str) -> dict[str, Any] | None:
         return None
 
     analyses_and_features = []
-    for repository in get_repositories(username):
+    # Eight repositories keep an unauthenticated public-GitHub analysis below the
+    # standard hourly request allowance while prioritizing recently updated work.
+    for repository in get_repositories(username)[:MAX_REPOSITORIES_TO_ANALYZE]:
         if repository.get("fork"):
             continue
         evidence = collect_repository_evidence(username, repository)

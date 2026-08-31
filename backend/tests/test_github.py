@@ -85,7 +85,11 @@ def test_repository_pagination_and_request_failure():
         assert len(github_service.get_repositories("sample")) == 101
 
     with patch("app.services.github_service._get", return_value=None):
-        assert github_service.get_repositories("sample") == []
+        try:
+            github_service.get_repositories("sample")
+            assert False, "Expected an unavailable GitHub API to raise an explicit error"
+        except github_service.GitHubServiceError as error:
+            assert "could not be reached" in str(error)
 
 
 def test_github_service_uses_a_configured_token_without_exposing_it():
@@ -319,7 +323,33 @@ def test_ai_explanation_uses_the_deterministic_report_without_changing_it():
     assert explanation == "Focus on adding tests to your strongest project."
     assert fake_responses.arguments["input"] == '{"github_analysis": {"github_score": 70}, "resume_analysis": {"resume_score": 80}}'
     assert fake_responses.arguments["store"] is False
+    assert fake_responses.arguments["max_output_tokens"] == 1600
+    assert fake_responses.arguments["reasoning"] == {"effort": "minimal"}
     assert report == {"github_analysis": {"github_score": 70}, "resume_analysis": {"resume_score": 80}}
+
+
+def test_ai_explanation_reads_message_content_when_sdk_output_text_is_empty():
+    response = SimpleNamespace(
+        output_text="",
+        status="completed",
+        output=[SimpleNamespace(content=[SimpleNamespace(type="output_text", text="Use the strongest project as evidence.")])],
+    )
+    explanation = generate_ai_explanation({}, client=SimpleNamespace(responses=SimpleNamespace(create=lambda **_: response)))
+
+    assert explanation == "Use the strongest project as evidence."
+
+
+def test_ai_explanation_reports_incomplete_responses_clearly():
+    response = SimpleNamespace(
+        output_text="",
+        status="incomplete",
+        incomplete_details=SimpleNamespace(reason="max_output_tokens"),
+    )
+    try:
+        generate_ai_explanation({}, client=SimpleNamespace(responses=SimpleNamespace(create=lambda **_: response)))
+        assert False, "Expected an incomplete response to raise a useful error"
+    except ValueError as error:
+        assert "max_output_tokens" in str(error)
 
 
 def test_combined_analysis_api_adds_ai_explanation_only_when_requested():

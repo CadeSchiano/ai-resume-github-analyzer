@@ -5,6 +5,10 @@ Scoring and feature interpretation belong in later services.
 """
 
 import base64
+from collections import OrderedDict
+from dataclasses import dataclass
+from threading import Lock
+from time import monotonic
 from typing import Any
 from urllib.parse import quote
 
@@ -15,10 +19,27 @@ from app.config import GITHUB_TOKEN
 
 BASE_URL = "https://api.github.com"
 REQUEST_TIMEOUT_SECONDS = 10
+PUBLIC_RESPONSE_CACHE_SECONDS = 5 * 60
+PUBLIC_RESPONSE_CACHE_LIMIT = 256
 DEFAULT_HEADERS = {
     "Accept": "application/vnd.github+json",
     "X-GitHub-Api-Version": "2022-11-28",
+    "User-Agent": "developer-readiness-analyzer",
 }
+
+
+@dataclass(frozen=True)
+class GitHubServiceError(Exception):
+    """A GitHub API problem that must not be presented as missing evidence."""
+
+    message: str
+
+    def __str__(self) -> str:
+        return self.message
+
+
+_response_cache: OrderedDict[tuple[str, tuple[tuple[str, Any], ...]], tuple[float, requests.Response]] = OrderedDict()
+_cache_lock = Lock()
 
 
 def _headers() -> dict[str, str]:
@@ -29,9 +50,16 @@ def _headers() -> dict[str, str]:
 
 
 def _get(path: str, params: dict[str, Any] | None = None) -> requests.Response | None:
-    """Make one GitHub request and convert network failures into missing data."""
+    """Make one GitHub request, briefly caching successful public responses."""
+    cache_key = (path, tuple(sorted((params or {}).items())))
+    now = monotonic()
+    with _cache_lock:
+        cached = _response_cache.get(cache_key)
+        if cached and cached[0] > now:
+            _response_cache.move_to_end(cache_key)
+            return cached[1]
     try:
-        return requests.get(
+        response = requests.get(
             f"{BASE_URL}{path}",
             params=params,
             headers=_headers(),
@@ -39,13 +67,34 @@ def _get(path: str, params: dict[str, Any] | None = None) -> requests.Response |
         )
     except requests.RequestException:
         return None
+    if response.status_code == 200:
+        with _cache_lock:
+            _response_cache[cache_key] = (now + PUBLIC_RESPONSE_CACHE_SECONDS, response)
+            _response_cache.move_to_end(cache_key)
+            while len(_response_cache) > PUBLIC_RESPONSE_CACHE_LIMIT:
+                _response_cache.popitem(last=False)
+    return response
+
+
+def _raise_for_unavailable_response(response: requests.Response | None) -> None:
+    if response is None:
+        raise GitHubServiceError("GitHub could not be reached. Check your connection and try again.")
+    if response.status_code in {403, 429}:
+        raise GitHubServiceError(
+            "GitHub's public API rate limit was reached. Wait a few minutes or set an optional GITHUB_TOKEN in backend/.env."
+        )
+    raise GitHubServiceError("GitHub data is temporarily unavailable. Please try again shortly.")
 
 
 def get_user(username: str) -> dict[str, Any] | None:
     response = _get(f"/users/{quote(username, safe='')}")
 
-    if response is None or response.status_code != 200:
+    if response is None:
+        _raise_for_unavailable_response(response)
+    if response.status_code == 404:
         return None
+    if response.status_code != 200:
+        _raise_for_unavailable_response(response)
 
     return response.json()
 
@@ -62,7 +111,7 @@ def get_repositories(username: str) -> list[dict[str, Any]]:
         )
 
         if response is None or response.status_code != 200:
-            return []
+            _raise_for_unavailable_response(response)
 
         batch = response.json()
         if not batch:

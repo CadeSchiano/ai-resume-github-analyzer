@@ -3,6 +3,7 @@ from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 from app.security import enforce_request_rate_limit
 from app.services.ai_explanation_service import generate_ai_explanation
 from app.services.developer_report_service import generate_developer_report
+from app.services.github_service import GitHubServiceError
 from app.services.report_service import generate_report
 from app.services.resume_service import extract_resume_text, validate_resume_pdf
 
@@ -16,7 +17,10 @@ router = APIRouter(
 @router.get("/{username}")
 def analyze(username: str):
 
-    report = generate_report(username)
+    try:
+        report = generate_report(username)
+    except GitHubServiceError as error:
+        raise HTTPException(status_code=503, detail=str(error)) from error
 
     if report is None:
         raise HTTPException(
@@ -50,6 +54,8 @@ async def analyze_developer(
         report = generate_developer_report(username, resume_text, target_role)
     except ValueError as error:
         raise HTTPException(status_code=400, detail=str(error)) from error
+    except GitHubServiceError as error:
+        raise HTTPException(status_code=503, detail=str(error)) from error
     if report is None:
         raise HTTPException(status_code=404, detail="GitHub user not found")
 
