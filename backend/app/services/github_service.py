@@ -10,6 +10,8 @@ from urllib.parse import quote
 
 import requests
 
+from app.config import GITHUB_TOKEN
+
 
 BASE_URL = "https://api.github.com"
 REQUEST_TIMEOUT_SECONDS = 10
@@ -19,13 +21,20 @@ DEFAULT_HEADERS = {
 }
 
 
+def _headers() -> dict[str, str]:
+    headers = DEFAULT_HEADERS.copy()
+    if GITHUB_TOKEN:
+        headers["Authorization"] = f"Bearer {GITHUB_TOKEN}"
+    return headers
+
+
 def _get(path: str, params: dict[str, Any] | None = None) -> requests.Response | None:
     """Make one GitHub request and convert network failures into missing data."""
     try:
         return requests.get(
             f"{BASE_URL}{path}",
             params=params,
-            headers=DEFAULT_HEADERS,
+            headers=_headers(),
             timeout=REQUEST_TIMEOUT_SECONDS,
         )
     except requests.RequestException:

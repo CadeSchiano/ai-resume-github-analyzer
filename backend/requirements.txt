@@ -4,3 +4,5 @@ requests
 pytest
 pypdf
 python-multipart
+python-dotenv
+openai

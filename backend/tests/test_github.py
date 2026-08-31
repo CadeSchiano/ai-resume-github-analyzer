@@ -1,11 +1,13 @@
 import base64
 from datetime import date
+from types import SimpleNamespace
 from unittest.mock import patch
 
 from fastapi.testclient import TestClient
 
 from app.main import app
 from app.services import github_service
+from app.services.ai_explanation_service import generate_ai_explanation
 from app.services.cross_analysis_service import compare_resume_skills
 from app.services.developer_report_service import generate_developer_report
 from app.services.feature_service import extract_repository_features
@@ -84,6 +86,14 @@ def test_repository_pagination_and_request_failure():
 
     with patch("app.services.github_service._get", return_value=None):
         assert github_service.get_repositories("sample") == []
+
+
+def test_github_service_uses_a_configured_token_without_exposing_it():
+    with patch("app.services.github_service.GITHUB_TOKEN", "test-token"):
+        headers = github_service._headers()
+
+    assert headers["Authorization"] == "Bearer test-token"
+    assert github_service.DEFAULT_HEADERS.items() <= headers.items()
 
 
 def test_repository_evidence_decodes_readme_and_preserves_statuses():
@@ -294,6 +304,38 @@ def test_combined_analysis_api_returns_a_clear_error_for_an_unsupported_role():
 
     assert response.status_code == 400
     assert response.json()["detail"] == "Unsupported target role: Designer"
+
+
+def test_ai_explanation_uses_the_deterministic_report_without_changing_it():
+    class FakeResponses:
+        def create(self, **kwargs):
+            self.arguments = kwargs
+            return SimpleNamespace(output_text="Focus on adding tests to your strongest project.")
+
+    fake_responses = FakeResponses()
+    report = {"github_analysis": {"github_score": 70}, "resume_analysis": {"resume_score": 80}}
+    explanation = generate_ai_explanation(report, client=SimpleNamespace(responses=fake_responses))
+
+    assert explanation == "Focus on adding tests to your strongest project."
+    assert fake_responses.arguments["input"] == '{"github_analysis": {"github_score": 70}, "resume_analysis": {"resume_score": 80}}'
+    assert fake_responses.arguments["store"] is False
+    assert report == {"github_analysis": {"github_score": 70}, "resume_analysis": {"resume_score": 80}}
+
+
+def test_combined_analysis_api_adds_ai_explanation_only_when_requested():
+    expected_report = {"username": "sample", "github_analysis": {}, "resume_analysis": {}, "resume_github_evidence": []}
+    client = TestClient(app)
+    with patch("app.routes.analysis.extract_resume_text", return_value="Jane Developer"), patch(
+        "app.routes.analysis.generate_developer_report", return_value=expected_report
+    ), patch("app.routes.analysis.generate_ai_explanation", return_value="Prioritize test coverage."):
+        response = client.post(
+            "/analysis/sample/resume",
+            data={"include_ai_explanation": "true"},
+            files={"resume": ("resume.pdf", b"%PDF-1.7 test", "application/pdf")},
+        )
+
+    assert response.status_code == 200
+    assert response.json()["ai_explanation"] == "Prioritize test coverage."
 
 
 def test_role_readiness_uses_resume_claims_public_evidence_and_projects():

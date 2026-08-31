@@ -1,19 +1,23 @@
-from fastapi import APIRouter, File, HTTPException, UploadFile
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 
+from app.security import enforce_request_rate_limit
 from app.services.resume_report_service import generate_resume_report
-from app.services.resume_service import extract_resume_text
+from app.services.resume_service import extract_resume_text, validate_resume_pdf
 
 
 router = APIRouter(
     prefix="/resume",
     tags=["Resume"],
+    dependencies=[Depends(enforce_request_rate_limit)],
 )
 
 
 async def _extract_uploaded_resume_text(resume: UploadFile) -> str:
     pdf_bytes = await resume.read()
-    if not pdf_bytes.startswith(b"%PDF-"):
-        raise HTTPException(status_code=400, detail="Upload a valid PDF resume.")
+    try:
+        validate_resume_pdf(pdf_bytes)
+    except ValueError as error:
+        raise HTTPException(status_code=400, detail=str(error)) from error
 
     try:
         return extract_resume_text(pdf_bytes)
