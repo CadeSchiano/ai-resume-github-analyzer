@@ -5,6 +5,7 @@ from fastapi.testclient import TestClient
 
 from app.main import app
 from app.services.resume_parser_service import parse_resume_text
+from app.services.resume_scoring_service import calculate_resume_scores
 from app.services.resume_service import extract_resume_text
 
 
@@ -105,3 +106,38 @@ def test_resume_parser_does_not_infer_missing_sections_or_skills():
     assert parsed["skills"] == []
     assert parsed["experience"] == []
     assert parsed["projects"] == []
+
+
+def test_resume_scores_are_deterministic_and_evidence_based():
+    parsed = {
+        "sections": {
+            "skills": "Python, FastAPI, React, PostgreSQL, Docker",
+            "experience": "Software Engineering Intern",
+            "projects": "Taskboard",
+            "education": "B.S. Computer Science",
+        },
+        "skills": ["Python", "React", "FastAPI", "PostgreSQL", "Docker"],
+        "experience": ["Engineering Intern\nBuilt an API that reduced response time by 30%."],
+        "projects": ["Taskboard\nDeveloped a React and FastAPI application used by 100 users."],
+    }
+
+    result = calculate_resume_scores(parsed)
+
+    assert result == {
+        "resume_score": 93,
+        "categories": {
+            "technical_skills": 30,
+            "experience": 25,
+            "projects": 30,
+            "structure": 8,
+        },
+    }
+
+
+def test_resume_scores_do_not_infer_evidence_that_is_absent():
+    result = calculate_resume_scores({"sections": {}, "skills": [], "experience": [], "projects": []})
+
+    assert result == {
+        "resume_score": 0,
+        "categories": {"technical_skills": 0, "experience": 0, "projects": 0, "structure": 0},
+    }
