@@ -1,4 +1,4 @@
-from fastapi import APIRouter, File, HTTPException, UploadFile
+from fastapi import APIRouter, File, Form, HTTPException, UploadFile
 
 from app.services.developer_report_service import generate_developer_report
 from app.services.report_service import generate_report
@@ -25,7 +25,11 @@ def analyze(username: str):
 
 
 @router.post("/{username}/resume")
-async def analyze_developer(username: str, resume: UploadFile = File(...)):
+async def analyze_developer(
+    username: str,
+    resume: UploadFile = File(...),
+    target_role: str | None = Form(None),
+):
     """Analyze one PDF resume with the user's public GitHub evidence."""
     pdf_bytes = await resume.read()
     if not pdf_bytes.startswith(b"%PDF-"):
@@ -36,7 +40,10 @@ async def analyze_developer(username: str, resume: UploadFile = File(...)):
     except ValueError as error:
         raise HTTPException(status_code=400, detail=str(error)) from error
 
-    report = generate_developer_report(username, resume_text)
+    try:
+        report = generate_developer_report(username, resume_text, target_role)
+    except ValueError as error:
+        raise HTTPException(status_code=400, detail=str(error)) from error
     if report is None:
         raise HTTPException(status_code=404, detail="GitHub user not found")
 

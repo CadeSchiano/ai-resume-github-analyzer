@@ -251,6 +251,21 @@ def test_developer_report_combines_existing_reports_and_cross_evidence():
     }
 
 
+def test_developer_report_adds_role_readiness_when_a_role_is_selected():
+    github_report = {
+        "username": "sample",
+        "repositories": [{"name": "api-service", "is_fork": False, "technologies_detected": ["Python"]}],
+    }
+    resume_report = {"skills": ["Python"], "projects": ["API service"]}
+    role_readiness = {"target_role": "Backend Developer", "role_readiness_score": 80}
+    with patch("app.services.developer_report_service.generate_report", return_value=github_report), patch(
+        "app.services.developer_report_service.generate_resume_report", return_value=resume_report
+    ), patch("app.services.developer_report_service.calculate_role_readiness", return_value=role_readiness):
+        report = generate_developer_report("sample", "resume text", "Backend Developer")
+
+    assert report["role_readiness"] == role_readiness
+
+
 def test_combined_analysis_api_returns_developer_report():
     expected_report = {"username": "sample", "github_analysis": {}, "resume_analysis": {}, "resume_github_evidence": []}
     client = TestClient(app)
@@ -264,6 +279,21 @@ def test_combined_analysis_api_returns_developer_report():
 
     assert response.status_code == 200
     assert response.json() == expected_report
+
+
+def test_combined_analysis_api_returns_a_clear_error_for_an_unsupported_role():
+    client = TestClient(app)
+    with patch("app.routes.analysis.extract_resume_text", return_value="Jane Developer"), patch(
+        "app.routes.analysis.generate_developer_report", side_effect=ValueError("Unsupported target role: Designer")
+    ):
+        response = client.post(
+            "/analysis/sample/resume",
+            data={"target_role": "Designer"},
+            files={"resume": ("resume.pdf", b"%PDF-1.7 test", "application/pdf")},
+        )
+
+    assert response.status_code == 400
+    assert response.json()["detail"] == "Unsupported target role: Designer"
 
 
 def test_role_readiness_uses_resume_claims_public_evidence_and_projects():
