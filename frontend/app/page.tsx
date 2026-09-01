@@ -77,7 +77,7 @@ export default function Home() {
   return (
     <main>
       <nav className="nav-shell" aria-label="Main navigation">
-        <a className="wordmark" href="#top"><span>northstar</span><i>developer readiness</i></a>
+        <a className="wordmark" href="#top"><span>devproof</span><i>developer readiness</i></a>
         <div className="nav-links"><a href="#how-it-works">How it works</a><a href="#analyze">Analyze <span>↘</span></a></div>
       </nav>
 
@@ -86,11 +86,11 @@ export default function Home() {
         <h1>See how job-ready your developer profile <em>actually</em> is.</h1>
         <p className="hero-copy">Get an evidence-based review of your resume and public GitHub, with clear scores and specific ways to improve.</p>
         <a className="hero-cta" href="#analyze">Analyze my profile <span>→</span></a>
-        <ul className="trust-list" aria-label="Northstar trust commitments"><li>No account required</li><li>Public GitHub repositories only</li><li>Resume processed in memory</li></ul>
+        <ul className="trust-list" aria-label="DevProof trust commitments"><li>No account required</li><li>Public GitHub repositories only</li><li>Resume processed in memory</li></ul>
       </section>
 
       <section className="example-section" id="example-report" aria-labelledby="example-title">
-        <div className="section-intro"><p className="eyebrow">A CLEARER PICTURE</p><h2 id="example-title">Know what the report will tell you.</h2><p>Northstar turns the work you already have into a focused review, not an arbitrary score.</p></div>
+        <div className="section-intro"><p className="eyebrow">A CLEARER PICTURE</p><h2 id="example-title">Know what the report will tell you.</h2><p>DevProof turns the work you already have into a focused review, not an arbitrary score.</p></div>
         <article className="example-report">
           <div className="example-score"><div><p className="eyebrow">EXAMPLE REPORT</p><h3>Developer readiness</h3><Score value={76} /></div><p>Based on resume evidence, public GitHub projects, and a selected role.</p></div>
           <div className="example-categories">{exampleCategories.map(([label, score]) => <div key={label as string}><span>{label}</span><b>{score}</b></div>)}</div>
@@ -105,12 +105,12 @@ export default function Home() {
       </section>
 
       <section className="sources-section" aria-labelledby="sources-title">
-        <div className="section-intro"><p className="eyebrow">WHAT NORTHSTAR ANALYZES</p><h2 id="sources-title">Two perspectives. One more useful developer story.</h2></div>
+        <div className="section-intro"><p className="eyebrow">WHAT DEVPROOF ANALYZES</p><h2 id="sources-title">Two perspectives. One more useful developer story.</h2></div>
         <div className="source-grid"><article><p className="eyebrow">RESUME</p><h3>What your application says on paper.</h3><ul><li>Explicit technical skills</li><li>Experience and action-oriented language</li><li>Project detail and technologies</li><li>Resume sections and structure</li></ul></article><article><p className="eyebrow">PUBLIC GITHUB</p><h3>What your work shows in practice.</h3><ul><li>Repository quality and documentation</li><li>Testing and visible engineering practices</li><li>Technical breadth and project complexity</li><li>Project presentation and recent activity</li></ul></article></div>
       </section>
 
       <section className="audience-section" aria-labelledby="audience-title">
-        <p className="eyebrow">BUILT FOR EARLY-CAREER DEVELOPERS</p><h2 id="audience-title">Choose the direction you are working toward.</h2><p>Northstar supports role-specific context for the paths where early projects and a clear resume can make the biggest difference.</p><div className="role-list">{roles.map((item) => <span key={item}>{item}</span>)}</div>
+        <p className="eyebrow">BUILT FOR EARLY-CAREER DEVELOPERS</p><h2 id="audience-title">Choose the direction you are working toward.</h2><p>DevProof supports role-specific context for the paths where early projects and a clear resume can make the biggest difference.</p><div className="role-list">{roles.map((item) => <span key={item}>{item}</span>)}</div>
       </section>
 
       <section className="feedback-section" aria-labelledby="feedback-title">
