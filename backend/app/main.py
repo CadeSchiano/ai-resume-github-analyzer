@@ -8,7 +8,7 @@ from app.routes.analysis import router as analysis_router
 from app.routes.resume import router as resume_router
 
 app = FastAPI(
-    title="AI Resume GitHub Analyzer",
+    title="DevProof API",
     version="1.0.0"
 )
 
@@ -47,7 +47,7 @@ async def add_security_headers_and_limit_upload_size(request: Request, call_next
 
 @app.get("/")
 def root():
-    return {"message": "AI Resume GitHub Analyzer API"}
+    return {"message": "DevProof API"}
 
 @app.get("/health")
 def health():
