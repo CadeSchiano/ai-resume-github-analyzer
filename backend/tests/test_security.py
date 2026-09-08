@@ -1,6 +1,6 @@
 from fastapi.testclient import TestClient
 
-from app.config import RATE_LIMIT_WINDOW_SECONDS
+from app.config import AI_EXPLANATION_RATE_LIMIT_WINDOW_SECONDS, RATE_LIMIT_WINDOW_SECONDS
 from app.main import app
 from app.security import RequestRateLimiter
 from app.services import resume_service
@@ -80,3 +80,4 @@ def test_api_allows_only_the_configured_frontend_origin():
 
 def test_rate_limit_retry_header_uses_the_configured_window():
     assert RATE_LIMIT_WINDOW_SECONDS == 60
+    assert AI_EXPLANATION_RATE_LIMIT_WINDOW_SECONDS == 60 * 60

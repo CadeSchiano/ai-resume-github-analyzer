@@ -368,6 +368,29 @@ def test_combined_analysis_api_adds_ai_explanation_only_when_requested():
     assert response.json()["ai_explanation"] == "Prioritize test coverage."
 
 
+def test_combined_analysis_applies_the_stricter_limit_only_to_ai_requests():
+    expected_report = {"username": "sample", "github_analysis": {}, "resume_analysis": {}, "resume_github_evidence": []}
+    client = TestClient(app)
+    with patch("app.routes.analysis.extract_resume_text", return_value="Jane Developer"), patch(
+        "app.routes.analysis.generate_developer_report", return_value=expected_report
+    ), patch("app.routes.analysis.generate_ai_explanation", return_value="Prioritize test coverage."), patch(
+        "app.routes.analysis.enforce_ai_explanation_rate_limit"
+    ) as ai_limit:
+        client.post(
+            "/analysis/sample/resume",
+            data={"include_ai_explanation": "false"},
+            files={"resume": ("resume.pdf", b"%PDF-1.7 test", "application/pdf")},
+        )
+        response = client.post(
+            "/analysis/sample/resume",
+            data={"include_ai_explanation": "true"},
+            files={"resume": ("resume.pdf", b"%PDF-1.7 test", "application/pdf")},
+        )
+
+    assert response.status_code == 200
+    assert ai_limit.call_count == 1
+
+
 def test_role_readiness_uses_resume_claims_public_evidence_and_projects():
     readiness = calculate_role_readiness(
         "Backend Developer",

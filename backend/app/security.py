@@ -6,7 +6,12 @@ from time import monotonic
 
 from fastapi import HTTPException, Request
 
-from app.config import RATE_LIMIT_MAX_REQUESTS, RATE_LIMIT_WINDOW_SECONDS
+from app.config import (
+    AI_EXPLANATION_RATE_LIMIT_MAX_REQUESTS,
+    AI_EXPLANATION_RATE_LIMIT_WINDOW_SECONDS,
+    RATE_LIMIT_MAX_REQUESTS,
+    RATE_LIMIT_WINDOW_SECONDS,
+)
 
 
 class RequestRateLimiter:
@@ -30,6 +35,10 @@ class RequestRateLimiter:
 
 
 rate_limiter = RequestRateLimiter(RATE_LIMIT_MAX_REQUESTS, RATE_LIMIT_WINDOW_SECONDS)
+ai_explanation_limiter = RequestRateLimiter(
+    AI_EXPLANATION_RATE_LIMIT_MAX_REQUESTS,
+    AI_EXPLANATION_RATE_LIMIT_WINDOW_SECONDS,
+)
 
 
 def enforce_request_rate_limit(request: Request) -> None:
@@ -41,4 +50,15 @@ def enforce_request_rate_limit(request: Request) -> None:
             status_code=429,
             detail="Too many requests. Please try again shortly.",
             headers={"Retry-After": str(RATE_LIMIT_WINDOW_SECONDS)},
+        )
+
+
+def enforce_ai_explanation_rate_limit(request: Request) -> None:
+    """Apply a stricter limit before a request can incur AI API cost."""
+    client_host = request.client.host if request.client else "unknown"
+    if not ai_explanation_limiter.allow(f"{client_host}:ai_explanation"):
+        raise HTTPException(
+            status_code=429,
+            detail="AI explanations are limited to two per hour. Please try again later.",
+            headers={"Retry-After": str(AI_EXPLANATION_RATE_LIMIT_WINDOW_SECONDS)},
         )

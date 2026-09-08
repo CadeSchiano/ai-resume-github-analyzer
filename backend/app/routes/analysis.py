@@ -1,6 +1,6 @@
-from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, UploadFile
 
-from app.security import enforce_request_rate_limit
+from app.security import enforce_ai_explanation_rate_limit, enforce_request_rate_limit
 from app.services.ai_explanation_service import generate_ai_explanation
 from app.services.developer_report_service import generate_developer_report
 from app.services.github_service import GitHubServiceError
@@ -34,6 +34,7 @@ def analyze(username: str):
 @router.post("/{username}/resume")
 async def analyze_developer(
     username: str,
+    request: Request,
     resume: UploadFile = File(...),
     target_role: str | None = Form(None),
     include_ai_explanation: bool = Form(False),
@@ -60,6 +61,7 @@ async def analyze_developer(
         raise HTTPException(status_code=404, detail="GitHub user not found")
 
     if include_ai_explanation:
+        enforce_ai_explanation_rate_limit(request)
         try:
             report["ai_explanation"] = generate_ai_explanation(report)
         except ValueError as error:
