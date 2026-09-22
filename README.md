@@ -1,6 +1,6 @@
-# DevProof: Developer Readiness Analyzer
+# Repolume: Developer Readiness Analyzer
 
-DevProof turns a PDF resume and a public GitHub profile into a practical, evidence-based readiness review for early-career developers.
+Repolume turns a PDF resume and a public GitHub profile into a practical, evidence-based readiness review for early-career developers.
 
 It does not use AI to score people. GitHub, resume, cross-evidence, and role-readiness scores are deterministic and based only on the visible evidence collected by the application. An optional AI explanation can summarize those results without changing them.
 
@@ -69,7 +69,7 @@ OPENAI_MODEL=gpt-5-mini
 FRONTEND_ORIGINS=http://localhost:3000,http://127.0.0.1:3000
 ```
 
-`GITHUB_TOKEN` is not required to analyze public repositories. Without it, GitHub applies its public API rate limit. DevProof limits a single analysis to the eight most recently updated public repositories and briefly caches successful public API responses to make repeat checks reliable. If GitHub still rate-limits a request, the API returns a clear temporary error instead of showing empty GitHub scores.
+`GITHUB_TOKEN` is not required to analyze public repositories. Without it, GitHub applies its public API rate limit. Repolume limits a single analysis to the eight most recently updated public repositories and briefly caches successful public API responses to make repeat checks reliable. If GitHub still rate-limits a request, the API returns a clear temporary error instead of showing empty GitHub scores.
 
 ## API
 

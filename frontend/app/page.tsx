@@ -1,6 +1,7 @@
 "use client";
 
 import { ChangeEvent, FormEvent, useMemo, useState } from "react";
+import { roleSlugByTitle } from "./role-guides";
 
 const roles = ["Software Engineer Intern", "Software Engineer", "Backend Developer", "Frontend Developer", "Full-Stack Developer", "Mobile Developer", "AI/ML"];
 const exampleCategories = [["Repository quality", 76], ["Documentation", 58], ["Engineering practices", 64], ["Project complexity", 72], ["Technical breadth", 92], ["Project presentation", 67], ["Activity", 80]];
@@ -77,7 +78,7 @@ export default function Home() {
   return (
     <main>
       <nav className="nav-shell" aria-label="Main navigation">
-        <a className="wordmark" href="#top"><span>devproof</span><i>developer readiness</i></a>
+        <a className="wordmark" href="#top"><span>repolume</span><i>developer readiness</i></a>
         <div className="nav-links"><a href="#how-it-works">How it works</a><a href="#scoring">Scoring</a><a href="#analyze">Analyze <span>↘</span></a></div>
       </nav>
 
@@ -86,11 +87,11 @@ export default function Home() {
         <h1>See how job-ready your developer profile <em>actually</em> is.</h1>
         <p className="hero-copy">Get an evidence based review of your resume and public GitHub, with clear scores and specific ways to improve.</p>
         <a className="hero-cta" href="#analyze">Analyze my profile <span>→</span></a>
-        <ul className="trust-list" aria-label="DevProof trust commitments"><li>No account required</li><li>Public GitHub repositories only</li><li>Resume processed in memory</li></ul>
+        <ul className="trust-list" aria-label="Repolume trust commitments"><li>No account required</li><li>Public GitHub repositories only</li><li>Resume processed in memory</li></ul>
       </section>
 
       <section className="example-section" id="example-report" aria-labelledby="example-title">
-        <div className="section-intro"><p className="eyebrow">A CLEARER PICTURE</p><h2 id="example-title">Know what the report will tell you.</h2><p>DevProof turns the work you already have into a focused review, not an arbitrary score.</p></div>
+        <div className="section-intro"><p className="eyebrow">A CLEARER PICTURE</p><h2 id="example-title">Know what the report will tell you.</h2><p>Repolume turns the work you already have into a focused review, not an arbitrary score.</p></div>
         <article className="example-report">
           <div className="example-score"><div><p className="eyebrow">EXAMPLE REPORT</p><h3>Developer readiness</h3><Score value={76} /></div><p>Based on resume evidence, public GitHub projects, and a selected role.</p></div>
           <div className="example-categories">{exampleCategories.map(([label, score]) => <div key={label as string}><span>{label}</span><b>{score}</b></div>)}</div>
@@ -105,18 +106,18 @@ export default function Home() {
       </section>
 
       <section className="sources-section" aria-labelledby="sources-title">
-        <div className="section-intro"><p className="eyebrow">WHAT DEVPROOF ANALYZES</p><h2 id="sources-title">Two perspectives. One more useful developer story.</h2></div>
+        <div className="section-intro"><p className="eyebrow">WHAT REPOLUME ANALYZES</p><h2 id="sources-title">Two perspectives. One more useful developer story.</h2></div>
         <div className="source-grid"><article><p className="eyebrow">RESUME</p><h3>What your application says on paper.</h3><ul><li>Explicit technical skills</li><li>Experience and action-oriented language</li><li>Project detail and technologies</li><li>Resume sections and structure</li></ul></article><article><p className="eyebrow">PUBLIC GITHUB</p><h3>What your work shows in practice.</h3><ul><li>Repository quality and documentation</li><li>Testing and visible engineering practices</li><li>Technical breadth and project complexity</li><li>Project presentation and recent activity</li></ul></article></div>
       </section>
 
       <section className="scoring-section" id="scoring" aria-labelledby="scoring-title">
-        <div className="section-intro"><p className="eyebrow">HOW SCORING WORKS</p><h2 id="scoring-title">A transparent score, built from visible signals.</h2><p>DevProof uses fixed rules, not AI judgment, for every numerical score. A score reflects what is visible in the resume and public repositories, not your potential, interview ability, or value as an engineer.</p></div>
-        <div className="scoring-grid">
-          <article><strong>01</strong><h3>Resume evidence</h3><p>Technical skills, experience detail, project detail, and resume structure each contribute to the resume score.</p></article>
-          <article><strong>02</strong><h3>Public GitHub evidence</h3><p>We assess repository quality, documentation, engineering practices, complexity, breadth, presentation, and recent activity across meaningful public projects.</p></article>
-          <article><strong>03</strong><h3>Role readiness</h3><p>Your selected role is matched against relevant skills named in your resume, public evidence for those skills, and whether the resume includes project work.</p></article>
+        <div className="section-intro"><p className="eyebrow">HOW SCORING WORKS</p><h2 id="scoring-title">A rubric you can inspect.</h2><p>Repolume uses fixed rules, not AI judgment, for every numerical score. A score reflects visible evidence in the resume and public repositories, not your potential, interview ability, or value as an engineer.</p></div>
+        <div className="rubric-grid">
+          <article className="rubric-card"><div><p className="eyebrow">RESUME SCORE</p><h3>100 points</h3></div><ul><li><b>30</b><span><strong>Technical skills</strong>Named skills, variety across skill areas, and a dedicated skills section.</span></li><li><b>30</b><span><strong>Experience</strong>Experience entries, action-oriented language, and measurable outcomes.</span></li><li><b>30</b><span><strong>Projects</strong>Project entries with technical detail, action-oriented language, and outcomes.</span></li><li><b>10</b><span><strong>Structure</strong>Clear skills, experience, projects, education, and summary sections.</span></li></ul></article>
+          <article className="rubric-card"><div><p className="eyebrow">PUBLIC GITHUB SCORE</p><h3>100 points</h3></div><ul><li><b>20</b><span><strong>Repository quality</strong>Original source code, dependency management, a README, description, and topics.</span></li><li><b>15</b><span><strong>Documentation</strong>Setup and usage guidance, architecture or technology context, and screenshots where useful.</span></li><li><b>20</b><span><strong>Engineering practices</strong>Tests, CI, configuration, dependency management, and Docker evidence.</span></li><li><b>20</b><span><strong>Project complexity</strong>Visible frontend, backend, data, APIs, authentication, deployment, integrations, or architecture.</span></li><li><b>25</b><span><strong>Breadth, presentation, activity</strong>Meaningful technology variety, clear project presentation, and recent activity.</span></li></ul></article>
+          <article className="rubric-card"><div><p className="eyebrow">ROLE READINESS</p><h3>100 points</h3></div><ul><li><b>45</b><span><strong>Resume alignment</strong>Relevant skills for the selected role appear in the resume.</span></li><li><b>35</b><span><strong>Public evidence</strong>Those role-relevant skills have matching public repository evidence. Some evidence earns partial credit.</span></li><li><b>20</b><span><strong>Project evidence</strong>The resume includes at least one project entry.</span></li></ul><p className="rubric-detail">Role requirements differ by path. The linked role guides show the specific skill groups considered for each one.</p></article>
         </div>
-        <p className="scoring-note">Scores are deterministic and repeatable. AI is optional and only explains the report. It never creates or changes a score.</p>
+        <p className="scoring-note">Only original public repositories with visible source code are used for project evidence. If GitHub does not provide enough data for a category, Repolume shows it as unavailable rather than guessing. AI is optional and only explains the report. It never creates or changes a score.</p>
       </section>
 
       <section className="hiring-section" aria-labelledby="hiring-title">
@@ -127,11 +128,11 @@ export default function Home() {
           <article><h3>Engineering craft</h3><p>Readable code, tests where they matter, thoughtful error handling, documentation, and a project that someone else can run.</p></article>
           <article><h3>Clear communication</h3><p>A concise resume, a focused project story, and the ability to work through ideas with teammates and interviewers.</p></article>
         </div>
-        <p className="hiring-note">DevProof can help you strengthen the public evidence in your application. It does not evaluate interviews, algorithmic problem solving, system design, referrals, or team fit.</p>
+        <p className="hiring-note">Repolume can help you strengthen the public evidence in your application. It does not evaluate interviews, algorithmic problem solving, system design, referrals, or team fit.</p>
       </section>
 
       <section className="audience-section" aria-labelledby="audience-title">
-        <p className="eyebrow">BUILT FOR EARLY-CAREER DEVELOPERS</p><h2 id="audience-title">Choose the direction you are working toward.</h2><p>DevProof supports role-specific context for the paths where early projects and a clear resume can make the biggest difference.</p><div className="role-list">{roles.map((item) => <span key={item}>{item}</span>)}</div>
+        <p className="eyebrow">BUILT FOR EARLY-CAREER DEVELOPERS</p><h2 id="audience-title">Choose the direction you are working toward.</h2><p>Repolume supports role-specific context for the paths where early projects and a clear resume can make the biggest difference. Select a path to see the skills to build and what makes project evidence stand out.</p><div className="role-list">{roles.map((item) => <a key={item} href={`/roles/${roleSlugByTitle[item]}`}>{item}<span aria-hidden="true">→</span></a>)}</div>
       </section>
 
       <section className="feedback-section" aria-labelledby="feedback-title">
@@ -162,7 +163,7 @@ export default function Home() {
         {analysis.ai_explanation && <article className="ai-note"><p className="eyebrow">AI EXPLANATION</p><p>{analysis.ai_explanation}</p></article>}
       </section>}
 
-      <footer className="site-footer"><span>DevProof beta</span><div><a href="/privacy">Privacy</a><a href="/terms">Terms</a><a href="mailto:cade73328@gmail.com">Contact</a></div></footer>
+      <footer className="site-footer"><span>Repolume beta</span><div><a href="/privacy">Privacy</a><a href="/terms">Terms</a><a href="mailto:cade73328@gmail.com">Contact</a></div></footer>
     </main>
   );
 }
