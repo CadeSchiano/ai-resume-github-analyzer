@@ -18,7 +18,7 @@ def _feedback(parsed_resume: dict[str, Any]) -> tuple[list[str], list[str]]:
     improvements = []
 
     if skills:
-        strengths.append(f"Lists {len(skills)} explicitly named technical skill{'s' if len(skills) != 1 else ''}.")
+        strengths.append(f"Recognizes {len(skills)} supported technical skill{'s' if len(skills) != 1 else ''}.")
     elif not sections.get("skills"):
         improvements.append("Add a dedicated Technical Skills section with the technologies you can discuss in an interview.")
 

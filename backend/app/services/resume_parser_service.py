@@ -10,6 +10,7 @@ SECTION_HEADERS = {
     "projects": {"projects", "personal projects", "selected projects", "academic projects"},
     "education": {"education", "academic background"},
     "certifications": {"certifications", "certificates"},
+    "activities": {"activities", "leadership", "activities and leadership", "activities leadership"},
 }
 SKILL_PATTERNS = {
     "Python": r"(?<!\w)python(?!\w)",
@@ -58,6 +59,7 @@ SKILL_PATTERNS = {
     "scikit-learn": r"(?<!\w)scikit[ -]learn(?!\w)",
 }
 BULLET_PREFIX = re.compile(r"^\s*(?:[-*•▪◦]|\d+[.)])\s+")
+DATE_RANGE = re.compile(r"\b(?:19|20)\d{2}\s*[-–]\s*(?:(?:19|20)\d{2}|present)\b", re.IGNORECASE)
 
 
 def _normalized_header(line: str) -> str:
@@ -81,10 +83,62 @@ def _entries(section_text: str) -> list[str]:
     """
     entries = []
     for paragraph in re.split(r"\n\s*\n", section_text):
-        lines = [BULLET_PREFIX.sub("", line).strip() for line in paragraph.splitlines() if line.strip()]
+        lines = [
+            cleaned
+            for line in paragraph.splitlines()
+            if (cleaned := BULLET_PREFIX.sub("", line).replace("\x7f", "").strip())
+        ]
         if lines:
             entries.append("\n".join(lines))
     return entries
+
+
+def _clean_lines(section_text: str) -> list[str]:
+    return [
+        cleaned
+        for line in section_text.splitlines()
+        if (cleaned := BULLET_PREFIX.sub("", line).replace("\x7f", "").strip())
+    ]
+
+
+def _technology_line(line: str) -> bool:
+    """Recognize a project technology stack without inferring technologies."""
+    normalized = line.casefold()
+    recognized_skills = sum(bool(re.search(pattern, normalized)) for pattern in SKILL_PATTERNS.values())
+    return recognized_skills >= 2
+
+
+def _project_entries(section_text: str) -> list[str]:
+    """Split projects at a title followed by a visible technology stack.
+
+    Many PDF extractors remove blank lines between projects. Project titles followed by
+    technology stacks are a more reliable boundary than treating every visual line as
+    its own entry.
+    """
+    lines = _clean_lines(section_text)
+    starts = [
+        index
+        for index in range(len(lines) - 1)
+        if not _technology_line(lines[index]) and _technology_line(lines[index + 1])
+    ]
+    if not starts:
+        return _entries(section_text)
+    return ["\n".join(lines[start:end]).strip() for start, end in zip(starts, [*starts[1:], len(lines)])]
+
+
+def _experience_entries(section_text: str) -> list[str]:
+    """Split roles around visible date ranges when PDF spacing has been removed."""
+    lines = _clean_lines(section_text)
+    starts = []
+    for index, line in enumerate(lines):
+        if not DATE_RANGE.search(line):
+            continue
+        start = index if line.strip() != DATE_RANGE.search(line).group(0) else max(index - 1, 0)
+        if start not in starts:
+            starts.append(start)
+    if len(starts) < 2:
+        return _entries(section_text)
+    return ["\n".join(lines[start:end]).strip() for start, end in zip(starts, [*starts[1:], len(lines)])]
 
 
 def parse_resume_text(text: str) -> dict[str, object]:
@@ -117,6 +171,6 @@ def parse_resume_text(text: str) -> dict[str, object]:
     return {
         "sections": section_text,
         "skills": skills,
-        "experience": _entries(section_text.get("experience", "")),
-        "projects": _entries(section_text.get("projects", "")),
+        "experience": _experience_entries(section_text.get("experience", "")),
+        "projects": _project_entries(section_text.get("projects", "")),
     }

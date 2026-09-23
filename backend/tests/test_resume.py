@@ -128,6 +128,43 @@ B.S. Computer Science
     ]
 
 
+def test_resume_parser_splits_projects_and_roles_when_pdf_spacing_is_missing():
+    parsed = parse_resume_text(
+        """PROJECTS
+TerritoryFlow
+React Native, TypeScript, Firebase
+- Built and published an app to the App Store.
+Scrimnet
+Next.js, React, PostgreSQL
+- Built a scheduling platform.
+
+Secured PostgreSQL data with Row Level Security.
+Activity Tracker
+FastAPI, Python, OpenAI
+- Developed an activity analysis API.
+
+EXPERIENCE
+Laborer
+2023 - 2026
+Newsome Painting
+Food Runner
+2021 - 2023
+Village Pub
+
+ACTIVITIES & LEADERSHIP
+Captain
+2023 - Present
+"""
+    )
+
+    assert len(parsed["projects"]) == 3
+    assert parsed["projects"][0].startswith("TerritoryFlow")
+    assert parsed["projects"][2].startswith("Activity Tracker")
+    assert len(parsed["experience"]) == 2
+    assert parsed["experience"][0].startswith("Laborer")
+    assert parsed["experience"][1].startswith("Food Runner")
+
+
 def test_resume_scores_are_deterministic_and_evidence_based():
     parsed = {
         "sections": {

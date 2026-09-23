@@ -62,7 +62,10 @@ ACTION_PATTERN = re.compile(
     r"\b(built|created|developed|designed|implemented|improved|optimized|led|deployed|automated|integrated|tested)\b",
     re.IGNORECASE,
 )
-OUTCOME_PATTERN = re.compile(r"\b\d+(?:\.\d+)?(?:%|x\b| users\b| ms\b| seconds\b| hours\b| requests\b)", re.IGNORECASE)
+OUTCOME_PATTERN = re.compile(
+    r"\b\d+(?:\.\d+)?(?:%|x\b| users\b| ms\b| seconds\b| hours\b| requests\b)|\b(?:published(?:\s+\w+){0,4}\s+app\s+store|app\s+store\s+deployment|version\s+\d+(?:\.\d+)*)\b",
+    re.IGNORECASE,
+)
 
 
 def _combined_text(entries: list[str]) -> str:
