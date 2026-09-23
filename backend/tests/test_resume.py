@@ -109,6 +109,25 @@ def test_resume_parser_does_not_infer_missing_sections_or_skills():
     assert parsed["projects"] == []
 
 
+def test_resume_parser_does_not_count_pdf_lines_as_separate_project_entries():
+    parsed = parse_resume_text(
+        """PROJECTS
+Taskboard
+- Built a React application with a Python backend.
+Added role-based access control.
+Deployed the app to a cloud service.
+
+EDUCATION
+B.S. Computer Science
+"""
+    )
+
+    assert parsed["projects"] == [
+        "Taskboard\nBuilt a React application with a Python backend.\n"
+        "Added role-based access control.\nDeployed the app to a cloud service."
+    ]
+
+
 def test_resume_scores_are_deterministic_and_evidence_based():
     parsed = {
         "sections": {

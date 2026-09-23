@@ -73,21 +73,18 @@ def _section_name(line: str) -> str | None:
 
 
 def _entries(section_text: str) -> list[str]:
-    lines = [line.strip() for line in section_text.splitlines() if line.strip()]
-    if any(BULLET_PREFIX.match(line) for line in lines):
-        entries = []
-        current_entry = []
-        for line in lines:
-            if BULLET_PREFIX.match(line):
-                current_entry.append(BULLET_PREFIX.sub("", line).strip())
-            else:
-                if current_entry:
-                    entries.append("\n".join(current_entry))
-                current_entry = [line]
-        if current_entry:
-            entries.append("\n".join(current_entry))
-        return entries
-    return [entry.strip() for entry in re.split(r"\n\s*\n", section_text) if entry.strip()]
+    """Return paragraph-level entries without treating PDF text lines as entries.
+
+    PDF text extraction is inconsistent about preserving bullet markers. Counting every
+    non-bullet line after a bullet can turn one project into dozens of entries, so a
+    blank line is the only reliable entry boundary used here.
+    """
+    entries = []
+    for paragraph in re.split(r"\n\s*\n", section_text):
+        lines = [BULLET_PREFIX.sub("", line).strip() for line in paragraph.splitlines() if line.strip()]
+        if lines:
+            entries.append("\n".join(lines))
+    return entries
 
 
 def parse_resume_text(text: str) -> dict[str, object]:

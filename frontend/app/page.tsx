@@ -163,7 +163,7 @@ export default function Home() {
         {analysis.ai_explanation && <article className="ai-note"><p className="eyebrow">AI EXPLANATION</p><p>{analysis.ai_explanation}</p></article>}
       </section>}
 
-      <footer className="site-footer"><span>Repolume beta</span><div><a href="/privacy">Privacy</a><a href="/terms">Terms</a><a href="mailto:cade73328@gmail.com">Contact</a></div></footer>
+      <footer className="site-footer"><span>Repolume beta</span><div><a href="/privacy">Privacy</a><a href="/terms">Terms</a><a href="mailto:cadeschiano8@yahoo.com" target="_blank" rel="noreferrer">cadeschiano8@yahoo.com</a></div></footer>
     </main>
   );
 }

@@ -20,9 +20,9 @@ export default function PrivacyPage() {
         <h2>Optional AI explanations</h2><p>If you choose “Add an AI explanation,” Repolume sends the completed report to OpenAI to generate an explanation. It does not send the raw PDF file, and Repolume sets <code>store=false</code> for the request. OpenAI may retain abuse-monitoring logs under its API data policies. Do not select this option if you do not want the completed report used to create an AI explanation.</p>
         <h2>How information is used</h2><p>Information is used to provide the requested report, operate and troubleshoot the beta, protect the service from abuse, and comply with applicable law. Repolume does not sell resume information.</p>
         <h2>Third parties</h2><p>Repolume uses GitHub’s public API to retrieve public repository information. When you opt in to an AI explanation, it uses OpenAI’s API to generate that explanation. Those providers handle information under their own terms and privacy practices.</p>
-        <h2>Changes and contact</h2><p>We may update this policy as the beta evolves. The effective date above will be updated when changes are posted. For privacy questions, contact <a href="mailto:cade73328@gmail.com">cade73328@gmail.com</a>.</p>
+        <h2>Changes and contact</h2><p>We may update this policy as the beta evolves. The effective date above will be updated when changes are posted. For privacy questions, contact <a href="mailto:cadeschiano8@yahoo.com">cadeschiano8@yahoo.com</a>.</p>
       </article>
-      <footer className={styles.footer}><span>Repolume beta</span><div><a href="/privacy">Privacy</a><a href="/terms">Terms</a><a href="mailto:cade73328@gmail.com">Contact</a></div></footer>
+      <footer className={styles.footer}><span>Repolume beta</span><div><a href="/privacy">Privacy</a><a href="/terms">Terms</a><a href="mailto:cadeschiano8@yahoo.com" target="_blank" rel="noreferrer">cadeschiano8@yahoo.com</a></div></footer>
     </main>
   );
 }

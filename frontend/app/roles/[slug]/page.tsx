@@ -42,7 +42,7 @@ export default async function RoleGuidePage({ params }: PageProps) {
         <aside className={styles.proof}><p className="eyebrow">PROJECT PROOF</p><p>{guide.projectProof}</p></aside>
         <p className={styles.disclaimer}>Repolume compares your resume and public GitHub evidence. It does not replace interview preparation or evaluate every factor used by a hiring team.</p>
       </section>
-      <footer className={styles.footer}><span>Repolume beta</span><div><Link href="/privacy">Privacy</Link><Link href="/terms">Terms</Link><a href="mailto:cade73328@gmail.com">Contact</a></div></footer>
+      <footer className={styles.footer}><span>Repolume beta</span><div><Link href="/privacy">Privacy</Link><Link href="/terms">Terms</Link><a href="mailto:cadeschiano8@yahoo.com" target="_blank" rel="noreferrer">cadeschiano8@yahoo.com</a></div></footer>
     </main>
   );
 }

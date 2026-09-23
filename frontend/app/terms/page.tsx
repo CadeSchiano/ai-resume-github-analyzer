@@ -19,9 +19,9 @@ export default function TermsPage() {
         <h2>Public GitHub data</h2><p>Repolume evaluates public GitHub information only. You are responsible for confirming that the username you enter is correct and for respecting GitHub’s terms when using information returned by the service.</p>
         <h2>No hiring or professional guarantee</h2><p>Reports and optional AI explanations are informational feedback, not a hiring decision, professional advice, or a guarantee of interview, employment, compensation, or outcome. Review the results critically before acting on them.</p>
         <h2>Availability and acceptable use</h2><p>We may limit, suspend, or discontinue access to protect the service, comply with law, or address misuse. Do not bypass rate limits, attempt unauthorized access, or use automated traffic that interferes with normal operation.</p>
-        <h2>Changes and contact</h2><p>We may update these terms as the beta evolves. The effective date above will be updated when changes are posted. For questions, contact <a href="mailto:cade73328@gmail.com">cade73328@gmail.com</a>.</p>
+        <h2>Changes and contact</h2><p>We may update these terms as the beta evolves. The effective date above will be updated when changes are posted. For questions, contact <a href="mailto:cadeschiano8@yahoo.com">cadeschiano8@yahoo.com</a>.</p>
       </article>
-      <footer className={styles.footer}><span>Repolume beta</span><div><a href="/privacy">Privacy</a><a href="/terms">Terms</a><a href="mailto:cade73328@gmail.com">Contact</a></div></footer>
+      <footer className={styles.footer}><span>Repolume beta</span><div><a href="/privacy">Privacy</a><a href="/terms">Terms</a><a href="mailto:cadeschiano8@yahoo.com" target="_blank" rel="noreferrer">cadeschiano8@yahoo.com</a></div></footer>
     </main>
   );
 }
