@@ -13,8 +13,10 @@ from app.services.resume_service import extract_resume_text
 class FakePage:
     def __init__(self, text):
         self.text = text
+        self.extraction_mode = None
 
-    def extract_text(self):
+    def extract_text(self, **kwargs):
+        self.extraction_mode = kwargs.get("extraction_mode")
         return self.text
 
 
@@ -28,6 +30,7 @@ def test_extract_resume_text_joins_text_from_all_pages():
         text = extract_resume_text(b"%PDF-1.7")
 
     assert text == "Jane Developer\nPython and FastAPI"
+    assert all(page.extraction_mode == "layout" for page in FakeReader.pages)
 
 
 def test_extract_resume_text_rejects_unreadable_or_empty_pdfs():
@@ -163,6 +166,22 @@ Captain
     assert len(parsed["experience"]) == 2
     assert parsed["experience"][0].startswith("Laborer")
     assert parsed["experience"][1].startswith("Food Runner")
+
+
+def test_resume_parser_splits_projects_when_title_skills_and_dates_share_a_line():
+    parsed = parse_resume_text(
+        """PROJECTS
+Bilingual Learning App | JavaScript, React, Node.js  Feb. 2025 - Present
+- Built an interactive learning application.
+
+Prediction Agent | Python, Flask  Aug. 2025 - Dec. 2025
+- Developed an educational market analysis tool.
+"""
+    )
+
+    assert len(parsed["projects"]) == 2
+    assert parsed["projects"][0].startswith("Bilingual Learning App")
+    assert parsed["projects"][1].startswith("Prediction Agent")
 
 
 def test_resume_scores_are_deterministic_and_evidence_based():

@@ -7,7 +7,7 @@ SECTION_HEADERS = {
     "summary": {"summary", "professional summary", "profile", "objective"},
     "skills": {"skills", "technical skills", "technical proficiencies", "skills and tools"},
     "experience": {"experience", "work experience", "professional experience", "employment history"},
-    "projects": {"projects", "personal projects", "selected projects", "academic projects"},
+    "projects": {"projects", "personal projects", "selected projects", "academic projects", "research projects"},
     "education": {"education", "academic background"},
     "certifications": {"certifications", "certificates"},
     "activities": {"activities", "leadership", "activities and leadership", "activities leadership"},
@@ -59,7 +59,10 @@ SKILL_PATTERNS = {
     "scikit-learn": r"(?<!\w)scikit[ -]learn(?!\w)",
 }
 BULLET_PREFIX = re.compile(r"^\s*(?:[-*•▪◦]|\d+[.)])\s+")
-DATE_RANGE = re.compile(r"\b(?:19|20)\d{2}\s*[-–]\s*(?:(?:19|20)\d{2}|present)\b", re.IGNORECASE)
+DATE_RANGE = re.compile(
+    r"\b(?:[a-z]{3,9}\.?(?:\s+))?(?:19|20)\d{2}\s*[-–]\s*(?:(?:[a-z]{3,9}\.?(?:\s+))?(?:(?:19|20)\d{2}|present))\b",
+    re.IGNORECASE,
+)
 
 
 def _normalized_header(line: str) -> str:
@@ -116,11 +119,19 @@ def _project_entries(section_text: str) -> list[str]:
     its own entry.
     """
     lines = _clean_lines(section_text)
-    starts = [
+    starts = {
+        index
+        for index, line in enumerate(lines)
+        if DATE_RANGE.search(line) and _technology_line(line)
+    }
+    starts.update(
         index
         for index in range(len(lines) - 1)
-        if not _technology_line(lines[index]) and _technology_line(lines[index + 1])
-    ]
+        if not _technology_line(lines[index])
+        and _technology_line(lines[index + 1])
+        and not DATE_RANGE.search(lines[index + 1])
+    )
+    starts = sorted(starts)
     if not starts:
         return _entries(section_text)
     return ["\n".join(lines[start:end]).strip() for start, end in zip(starts, [*starts[1:], len(lines)])]

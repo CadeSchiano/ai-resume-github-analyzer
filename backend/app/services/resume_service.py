@@ -25,7 +25,9 @@ def extract_resume_text(pdf_bytes: bytes) -> str:
     if reader.is_encrypted:
         raise ValueError("Encrypted PDF resumes are not supported.")
 
-    text = "\n".join(page.extract_text() or "" for page in reader.pages).strip()
+    text = "\n".join(
+        page.extract_text(extraction_mode="layout") or "" for page in reader.pages
+    ).strip()
     if not text:
         raise ValueError("No selectable text was found in this PDF resume.")
 
