@@ -12,6 +12,9 @@ venv/
 .env
 .env.local
 .env.*
+!.env.example
+!backend/.env.example
+!frontend/.env.example
 
 # Python Build Files
 build/

@@ -24,7 +24,7 @@ PUBLIC_RESPONSE_CACHE_LIMIT = 256
 DEFAULT_HEADERS = {
     "Accept": "application/vnd.github+json",
     "X-GitHub-Api-Version": "2022-11-28",
-    "User-Agent": "developer-readiness-analyzer",
+    "User-Agent": "repolume-public-repository-analyzer",
 }
 
 
